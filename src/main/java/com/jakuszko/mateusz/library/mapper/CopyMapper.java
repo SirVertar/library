@@ -1,57 +1,50 @@
 package com.jakuszko.mateusz.library.mapper;
 
-import com.jakuszko.mateusz.library.domain.Borrow;
-import com.jakuszko.mateusz.library.domain.Copy;
-import com.jakuszko.mateusz.library.domain.CopyDto;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.jakuszko.mateusz.library.domain.*;
+import com.jakuszko.mateusz.library.exceptions.TitleNotFoundException;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 @Component
 public class CopyMapper {
-    private final TitleMapper titleMapper;
 
-    @Autowired
-    public CopyMapper(TitleMapper titleMapper) {
-        this.titleMapper = titleMapper;
-    }
-
-    public CopyDto mapToCopyDto(Copy copy) {
+    public CopyDto mapToCopyDto(Copy copy, TitleDto titleDto) {
         try {
             return CopyDto.builder()
                     .id(copy.getId())
-                    .titleDto(titleMapper.mapToTitleDto(copy.getTitle()))
+                    .titleDto(titleDto)
                     .isBorrowed(copy.getIsBorrowed())
                     .borrowId(copy.getBorrow().getId())
                     .build();
         } catch (NullPointerException e) {
             return CopyDto.builder()
                     .id(copy.getId())
-                    .titleDto(titleMapper.mapToTitleDto(copy.getTitle()))
+                    .titleDto(titleDto)
                     .isBorrowed(copy.getIsBorrowed())
                     .borrowId(-1L)
                     .build();
         }
     }
 
-    public Copy mapToCopy(CopyDto copyDto) {
+    public Copy mapToCopy(CopyDto copyDto, Title title) {
         return Copy.builder()
                 .id(copyDto.getId())
-                .title(titleMapper.mapToTitle(copyDto.getTitleDto()))
+                .title(title)
                 .isBorrowed(copyDto.getIsBorrowed())
                 .borrow(new Borrow())
                 .build();
     }
 
-    public List<CopyDto> mapToCopyDtoList(List<Copy> copies) {
+    public List<CopyDto> mapToCopyDtoList(List<Copy> copies, List<TitleDto> titleDtos) {
 
         try {
             return copies.stream()
                     .map(copy -> CopyDto.builder()
                             .id(copy.getId())
-                            .titleDto(titleMapper.mapToTitleDto(copy.getTitle()))
+                            .titleDto(titleDtos.stream().filter(e -> e.getId() == copy.getTitle().getId()).findFirst().get())
                             .isBorrowed(copy.getIsBorrowed())
                             .borrowId(copy.getBorrow().getId())
                             .build())
@@ -60,7 +53,7 @@ public class CopyMapper {
             return copies.stream()
                     .map(copy -> CopyDto.builder()
                             .id(copy.getId())
-                            .titleDto(titleMapper.mapToTitleDto(copy.getTitle()))
+                            .titleDto(titleDtos.stream().filter(f -> f.getId() == copy.getTitle().getId()).findFirst().get())
                             .isBorrowed(copy.getIsBorrowed())
                             .borrowId(-1L)
                             .build())
@@ -68,11 +61,11 @@ public class CopyMapper {
         }
     }
 
-    public List<Copy> mapToCopyList(List<CopyDto> copies) {
+    public List<Copy> mapToCopyList(List<CopyDto> copies, Stream<Title> titleStream) throws TitleNotFoundException {
         return copies.stream()
                 .map(e -> Copy.builder()
                         .id(e.getId())
-                        .title(titleMapper.mapToTitle(e.getTitleDto()))
+                        .title(titleStream.filter(title -> title.getId().equals(e.getTitleDto().getId())).findFirst().get())
                         .isBorrowed(e.getIsBorrowed())
                         .build())
                 .collect(Collectors.toList());

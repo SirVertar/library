@@ -1,5 +1,6 @@
 package com.jakuszko.mateusz.library.mapper;
 
+import com.jakuszko.mateusz.library.domain.Copy;
 import com.jakuszko.mateusz.library.domain.Title;
 import com.jakuszko.mateusz.library.domain.TitleDto;
 import org.springframework.stereotype.Component;
@@ -19,12 +20,13 @@ public class TitleMapper {
                 .build();
     }
 
-    public Title mapToTitle(TitleDto titleDto) {
+    public Title mapToTitle(TitleDto titleDto, List<Copy> copies) {
         return Title.builder()
                 .id(titleDto.getId())
                 .title(titleDto.getTitle())
                 .author(titleDto.getAuthor())
                 .releaseDate(titleDto.getReleaseDate())
+                .copies(copies)
                 .build();
     }
 

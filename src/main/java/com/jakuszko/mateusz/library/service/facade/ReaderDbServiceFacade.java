@@ -3,7 +3,10 @@ package com.jakuszko.mateusz.library.service.facade;
 import com.jakuszko.mateusz.library.domain.*;
 import com.jakuszko.mateusz.library.exceptions.ReaderNotFoundException;
 import com.jakuszko.mateusz.library.exceptions.TitleNotFoundException;
+import com.jakuszko.mateusz.library.mapper.BorrowMapper;
+import com.jakuszko.mateusz.library.mapper.CopyMapper;
 import com.jakuszko.mateusz.library.mapper.ReaderMapper;
+import com.jakuszko.mateusz.library.mapper.TitleMapper;
 import com.jakuszko.mateusz.library.service.BorrowDbService;
 import com.jakuszko.mateusz.library.service.CopyDbService;
 import com.jakuszko.mateusz.library.service.ReaderDbService;
@@ -11,7 +14,9 @@ import com.jakuszko.mateusz.library.service.TitleDbService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
@@ -21,30 +26,54 @@ public class ReaderDbServiceFacade {
     private final ReaderDbService readerDbService;
     private final TitleDbService titleDbService;
     private final ReaderMapper readerMapper;
+    private final BorrowMapper borrowMapper;
+    private final CopyMapper copyMapper;
+    private final TitleMapper titleMapper;
 
     @Autowired
     public ReaderDbServiceFacade(BorrowDbService borrowDbService, CopyDbService copyDbService,
-                                 ReaderDbService readerDbService, TitleDbService titleDbService, ReaderMapper readerMapper) {
+                                 ReaderDbService readerDbService, TitleDbService titleDbService, ReaderMapper readerMapper,
+                                 BorrowMapper borrowMapper, CopyMapper copyMapper, TitleMapper titleMapper) {
         this.borrowDbService = borrowDbService;
         this.copyDbService = copyDbService;
         this.readerDbService = readerDbService;
         this.titleDbService = titleDbService;
         this.readerMapper = readerMapper;
+        this.borrowMapper = borrowMapper;
+        this.copyMapper = copyMapper;
+        this.titleMapper = titleMapper;
     }
 
-    public List<ReaderDto> getReaders () {
-        return readerMapper.mapToReaderDtoList(readerDbService.getReaders());
+    public List<ReaderDto> getReaders() {
+        List<Reader> readers = readerDbService.getReaders();
+        List<Borrow> borrows = borrowDbService.getBorrowListByReadersList(readers);
+        List<Long> copiesIdsList = borrows.stream().filter(Objects::nonNull)
+                .flatMap(borrow -> borrow.getCopies().stream()
+                        .map(Copy::getId)).collect(Collectors.toList());
+        List<Copy> copies = copyDbService.getCopiesByIdList(copiesIdsList);
+        List<Title> titles = titleDbService.getTitlesByCopyLists(copies);
+        List<TitleDto> titleDtos = titleMapper.mapToTitleDtoList(titles);
+        List<CopyDto> copyDtos = copyMapper.mapToCopyDtoList(copies, titleDtos);
+        List<BorrowDto> borrowDtos = borrowMapper.mapToBorrowDtoList(borrows, copyDtos);
+        return readerMapper.mapToReaderDtoList(readers, borrowDtos);
     }
+
     public ReaderDto getReader(Long id) throws ReaderNotFoundException {
-        return readerMapper.mapToReaderDto(readerDbService.getReader(id).orElseThrow(ReaderNotFoundException::new));
+        Reader reader = readerDbService.getReader(id).orElseThrow(ReaderNotFoundException::new);
+        List<Borrow> borrowDtos = borrowDbService.getBorrowListByReaderId(id);
+        List<Copy> copies = copyDbService.getCopiesByReaderId(id);
+        List<Title> titles = titleDbService.getTitlesByCopyLists(copies);
+        List<CopyDto> copyDtos = copyMapper.mapToCopyDtoList(copies, titleMapper.mapToTitleDtoList(titles));
+        return readerMapper.mapToReaderDto(reader, borrowMapper.mapToBorrowDtoList(borrowDtos, copyDtos));
     }
 
     public void createReader(ReaderDto readerDto) throws ReaderNotFoundException {
-        readerDbService.create(readerMapper.mapToReader(readerDto));
+        readerDbService.create(readerMapper.mapToReader(readerDto, new ArrayList<Borrow>()));
     }
 
     public void updateReader(ReaderDto readerDto) throws ReaderNotFoundException {
-        readerDbService.update(readerMapper.mapToReader(readerDto));
+        List<Borrow> borrows = borrowDbService.getBorrowListByReaderId(readerDto.getId());
+        readerDbService.update(readerMapper.mapToReader(readerDto, borrows));
     }
 
     public void deleteReader(Long id) throws ReaderNotFoundException {

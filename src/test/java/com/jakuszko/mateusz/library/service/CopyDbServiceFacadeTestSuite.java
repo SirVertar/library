@@ -33,14 +33,6 @@ public class CopyDbServiceFacadeTestSuite {
                 .name("Mateusz")
                 .surname("Jakuszko")
                 .registeredDate(LocalDate.of(2012, 10, 13)).build();
-        Reader reader2 = Reader.builder()
-                .name("Weronika")
-                .surname("Chopin")
-                .registeredDate(LocalDate.of(2015, 12, 25)).build();
-        Reader reader3 = Reader.builder()
-                .name("Beata")
-                .surname("Forod")
-                .registeredDate(LocalDate.of(2002, 5, 9)).build();
 
         Borrow borrow = Borrow.builder()
                 .reader(reader1).build();
@@ -55,8 +47,6 @@ public class CopyDbServiceFacadeTestSuite {
         System.out.println(title1.getId());
         //When
         readerDbService.create(reader1);
-        readerDbService.create(reader2);
-        readerDbService.create(reader3);
         borrowDbService.create(borrow);
         titleDbService.create(title1);
         titleDbService.create(title2);

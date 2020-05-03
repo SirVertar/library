@@ -1,7 +1,7 @@
 package com.jakuszko.mateusz.library.repository;
 
 import com.jakuszko.mateusz.library.domain.Borrow;
-import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -10,11 +10,13 @@ import java.util.Optional;
 
 @Transactional
 @Repository
-public interface BorrowRepository extends CrudRepository<Borrow, Long> {
+public interface BorrowRepository extends JpaRepository<Borrow, Long> {
     @Override
     List<Borrow> findAll();
+
     @Override
     Optional<Borrow> findById(Long id);
+
     @Override
     Borrow save(Borrow borrow);
 }

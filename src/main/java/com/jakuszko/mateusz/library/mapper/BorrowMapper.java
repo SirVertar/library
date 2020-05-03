@@ -1,63 +1,54 @@
 package com.jakuszko.mateusz.library.mapper;
 
-import com.jakuszko.mateusz.library.domain.Borrow;
-import com.jakuszko.mateusz.library.domain.BorrowDto;
-import com.jakuszko.mateusz.library.exceptions.ReaderNotFoundException;
-import com.jakuszko.mateusz.library.exceptions.ReaderNotFoundRuntimeException;
-import com.jakuszko.mateusz.library.service.ReaderDbService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.jakuszko.mateusz.library.domain.*;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
+import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Component
 public class BorrowMapper {
-    private final CopyMapper copyMapper;
-    private final ReaderDbService readerDbService;
 
-    @Autowired
-    public BorrowMapper(CopyMapper copyMapper, ReaderDbService readerDbService) {
-        this.copyMapper = copyMapper;
-        this.readerDbService = readerDbService;
-    }
-
-    public BorrowDto mapToBorrowDto(Borrow borrow) {
+    public BorrowDto mapToBorrowDto(Borrow borrow, List<CopyDto> copyDtos) {
         return BorrowDto.builder()
                 .id(borrow.getId())
                 .startDate(borrow.getStartDate())
                 .endDate(borrow.getEndDate())
                 .readerId(borrow.getReader().getId())
-                .copies(copyMapper.mapToCopyDtoList(borrow.getCopies()))
+                .copies(copyDtos)
                 .build();
     }
 
-    public Borrow mapToBorrow(BorrowDto borrowDto) throws ReaderNotFoundException {
+    public Borrow mapToBorrow(BorrowDto borrowDto, List<Copy> copies, Reader reader) {
         return Borrow.builder()
                 .id(borrowDto.getId())
-                .reader(readerDbService.getReader(borrowDto.getReaderId()).orElseThrow(ReaderNotFoundException::new))
-                .copies(copyMapper.mapToCopyList(borrowDto.getCopies()))
+                .reader(reader)
+                .copies(copies)
                 .build();
     }
 
-    public List<BorrowDto> mapToBorrowDtoList(List<Borrow> borrows) {
-        return borrows.stream()
+    public List<BorrowDto> mapToBorrowDtoList(List<Borrow> borrows, List<CopyDto> copyDtos) {
+        return borrows.stream().filter(Objects::nonNull).filter(borrow -> borrow.getReader() != null)
                 .map(e -> BorrowDto.builder()
                         .id(e.getId())
                         .startDate(e.getStartDate())
                         .endDate(e.getEndDate())
                         .readerId(e.getReader().getId())
-                        .copies(copyMapper.mapToCopyDtoList(e.getCopies()))
+                        .copies(copyDtos.stream()
+                                .filter(copyDto -> copyDto.getBorrowId().equals(e.getId())).collect(Collectors.toList()))
                         .build())
                 .collect(Collectors.toList());
     }
 
-    public List<Borrow> mapToBorrowList(List<BorrowDto> borrowDtos) {
+    public List<Borrow> mapToBorrowList(List<BorrowDto> borrowDtos, List<Copy> copies, Reader reader) {
         return borrowDtos.stream()
                 .map(e -> Borrow.builder()
                         .id(e.getId())
-                        .reader(readerDbService.getReader(e.getReaderId()).orElseThrow(ReaderNotFoundRuntimeException::new))
-                        .copies(copyMapper.mapToCopyList(e.getCopies())).build())
+                        .reader(reader)
+                        .copies(copies.stream()
+                                .filter(copy -> copy.getBorrow().getId().equals(e.getId())).collect(Collectors.toList()))
+                        .build())
                 .collect(Collectors.toList());
     }
 }

@@ -2,7 +2,7 @@ package com.jakuszko.mateusz.library.controller;
 
 import com.jakuszko.mateusz.library.domain.TitleDto;
 import com.jakuszko.mateusz.library.exceptions.TitleNotFoundException;
-import com.jakuszko.mateusz.library.service.facade.LibraryServiceFacade;
+import com.jakuszko.mateusz.library.service.facade.TitleDbServiceFacade;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
@@ -13,40 +13,40 @@ import java.util.List;
 @RequestMapping("v1/title")
 public class TitleController {
 
-    private final LibraryServiceFacade libraryServiceFacade;
+    private final TitleDbServiceFacade titleDbServiceFacade;
 
     @Autowired
-    public TitleController(LibraryServiceFacade libraryServiceFacade) {
-        this.libraryServiceFacade = libraryServiceFacade;
+    public TitleController(TitleDbServiceFacade titleDbServiceFacade) {
+        this.titleDbServiceFacade = titleDbServiceFacade;
     }
 
     @GetMapping
     public List<TitleDto> get() {
-        return libraryServiceFacade.getTitles();
+        return titleDbServiceFacade.getTitles();
     }
 
     @GetMapping("/{id}")
     public TitleDto get(@PathVariable Long id) throws TitleNotFoundException {
-        return libraryServiceFacade.getTitle(id);
+        return titleDbServiceFacade.getTitle(id);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public void create(@RequestBody TitleDto titleDto) {
-        libraryServiceFacade.createTitle(titleDto);
+        titleDbServiceFacade.createTitle(titleDto);
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) throws TitleNotFoundException {
-        libraryServiceFacade.deleteTitle(id);
+        titleDbServiceFacade.deleteTitle(id);
     }
 
     @PutMapping
-    public void update(@RequestBody TitleDto titleDto) {
-        libraryServiceFacade.updateTitle(titleDto);
+    public void update(@RequestBody TitleDto titleDto) throws TitleNotFoundException {
+        titleDbServiceFacade.updateTitle(titleDto);
     }
 
     @GetMapping("/copiesOf/{id}")
     public Long getQuantityOfAvailableCopiesOfTitle(@PathVariable Long id) throws TitleNotFoundException {
-        return libraryServiceFacade.getQuantityOfAvailableCopiesOfTitle(id);
+        return titleDbServiceFacade.getQuantityOfAvailableCopiesOfTitle(id);
     }
 }

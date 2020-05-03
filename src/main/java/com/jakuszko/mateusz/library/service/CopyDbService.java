@@ -1,6 +1,7 @@
 package com.jakuszko.mateusz.library.service;
 
 import com.jakuszko.mateusz.library.domain.Copy;
+import com.jakuszko.mateusz.library.domain.Title;
 import com.jakuszko.mateusz.library.repository.CopyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -40,9 +41,10 @@ public class CopyDbService {
         copyRepository.deleteById(id);
     }
 
-    public List<Optional<Copy>> getCopiesByIdList(List<Long> ids) {
+    public List<Copy> getCopiesByIdList(List<Long> ids) {
         return ids.stream()
                 .map(copyRepository::findById)
+                .map(Optional::get)
                 .collect(Collectors.toList());
     }
 
@@ -52,5 +54,14 @@ public class CopyDbService {
     public void setBorrowToNull(List<Copy> copys) {
         copys.forEach(e -> e.setBorrow(null));
         copys.forEach(this::update);
+    }
+
+    public List<Copy> getCopiesByTitle(Title title) {
+        return copyRepository.findAllByTitle(title);
+    }
+
+    public List<Copy> getCopiesByReaderId(Long id) {
+        return copyRepository.findAll().stream()
+                .filter(copy -> copy.getBorrow().getReader().getId().equals(id)).collect(Collectors.toList());
     }
 }
