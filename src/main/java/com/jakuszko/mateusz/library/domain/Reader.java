@@ -3,7 +3,6 @@ package com.jakuszko.mateusz.library.domain;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -16,8 +15,7 @@ import java.util.List;
 public class Reader {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @NotNull
-    @Column(name = "ID", unique = true)
+    @Column(name = "ID")
     private Long id;
 
     @Column(name = "NAME")
@@ -32,5 +30,5 @@ public class Reader {
     @OneToMany(targetEntity = Borrow.class,
             mappedBy = "reader",
             fetch = FetchType.LAZY)
-    private List<Borrow> borrowList;
+    private List<Borrow> borrows;
 }

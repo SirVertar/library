@@ -13,7 +13,6 @@ import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Transactional
 @Service
 public class TitleDbService {
     private final TitleRepository titleRepository;
@@ -42,12 +41,12 @@ public class TitleDbService {
         titleRepository.save(title);
     }
 
-    public void update(Long id) {
+    public void delete(Long id) {
         titleRepository.deleteById(id);
     }
 
     public List<Title> getTitlesByCopyLists(List<Copy> copies) {
-        List<Long> titlesIdsInCopies = copies.stream().map(Copy::getTitle).map(Title::getId).collect(Collectors.toList());;
+        List<Long> titlesIdsInCopies = copies.stream().map(Copy::getTitle).map(Title::getId).collect(Collectors.toList());
         return titleRepository.findAll().stream()
                 .filter(title -> titlesIdsInCopies.contains(title.getId()))
                 .collect(Collectors.toList());

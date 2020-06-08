@@ -4,12 +4,10 @@ import com.jakuszko.mateusz.library.domain.Reader;
 import com.jakuszko.mateusz.library.repository.ReaderRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 
-@Transactional
 @Service
 public class ReaderDbService {
     private final ReaderRepository readerRepository;
@@ -18,8 +16,6 @@ public class ReaderDbService {
     public ReaderDbService(ReaderRepository readerRepository) {
         this.readerRepository = readerRepository;
     }
-
-
 
     public List<Reader> getReaders() {
         return readerRepository.findAll();

@@ -1,19 +1,25 @@
-package com.jakuszko.mateusz.library.service;
+package com.jakuszko.mateusz.library.facade;
 
 import com.jakuszko.mateusz.library.domain.Borrow;
 import com.jakuszko.mateusz.library.domain.Copy;
 import com.jakuszko.mateusz.library.domain.Reader;
 import com.jakuszko.mateusz.library.domain.Title;
+import com.jakuszko.mateusz.library.service.BorrowDbService;
+import com.jakuszko.mateusz.library.service.CopyDbService;
+import com.jakuszko.mateusz.library.service.ReaderDbService;
+import com.jakuszko.mateusz.library.service.TitleDbService;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.context.junit4.SpringRunner;
 
+import javax.transaction.Transactional;
 import java.time.LocalDate;
 
 import static org.junit.Assert.assertNotNull;
 
+@Transactional
 @RunWith(SpringRunner.class)
 @SpringBootTest
 public class CopyDbServiceFacadeTestSuite {

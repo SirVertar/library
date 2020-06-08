@@ -5,13 +5,11 @@ import com.jakuszko.mateusz.library.domain.Title;
 import com.jakuszko.mateusz.library.repository.CopyRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.Collectors;
 
-@Transactional
 @Service
 public class CopyDbService {
     private final CopyRepository copyRepository;

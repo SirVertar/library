@@ -1,5 +1,5 @@
 package com.jakuszko.mateusz.library.exceptions;
 
-public class CopyNotFoundException extends Exception {
+public class CopyNotFoundException extends LibraryException {
 
 }

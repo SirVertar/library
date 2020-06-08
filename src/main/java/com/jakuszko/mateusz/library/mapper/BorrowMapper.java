@@ -1,16 +1,19 @@
 package com.jakuszko.mateusz.library.mapper;
 
 import com.jakuszko.mateusz.library.domain.*;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
+@Slf4j
 @Component
 public class BorrowMapper {
 
     public BorrowDto mapToBorrowDto(Borrow borrow, List<CopyDto> copyDtos) {
+        log.info("Map Borrow to BorrowDto");
         return BorrowDto.builder()
                 .id(borrow.getId())
                 .startDate(borrow.getStartDate())
@@ -21,6 +24,7 @@ public class BorrowMapper {
     }
 
     public Borrow mapToBorrow(BorrowDto borrowDto, List<Copy> copies, Reader reader) {
+        log.info("Map BorrowDto to Borrow");
         return Borrow.builder()
                 .id(borrowDto.getId())
                 .reader(reader)
@@ -29,6 +33,7 @@ public class BorrowMapper {
     }
 
     public List<BorrowDto> mapToBorrowDtoList(List<Borrow> borrows, List<CopyDto> copyDtos) {
+        log.info("Map Borrows to BorrowDtos");
         return borrows.stream().filter(Objects::nonNull).filter(borrow -> borrow.getReader() != null)
                 .map(e -> BorrowDto.builder()
                         .id(e.getId())
@@ -42,6 +47,7 @@ public class BorrowMapper {
     }
 
     public List<Borrow> mapToBorrowList(List<BorrowDto> borrowDtos, List<Copy> copies, Reader reader) {
+        log.info("Map BorrowDtos to Borrows");
         return borrowDtos.stream()
                 .map(e -> Borrow.builder()
                         .id(e.getId())

@@ -3,7 +3,6 @@ package com.jakuszko.mateusz.library.domain;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.time.LocalDate;
 import java.util.List;
 
@@ -17,17 +16,14 @@ public class Borrow {
 
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @NotNull
     @Column(name = "ID")
     private Long id;
 
     @Column(name = "START_DATE")
-    private final LocalDate startDate = LocalDate.now();
+    private LocalDate startDate;
 
     @Column(name = "END_DATE")
-    private final LocalDate endDate = LocalDate.of(LocalDate.now().getYear(),
-            LocalDate.now().getMonth().getValue() + 3,
-            LocalDate.now().getDayOfMonth());
+    private LocalDate endDate;
 
     @ManyToOne(targetEntity = Reader.class,
             fetch = FetchType.EAGER)

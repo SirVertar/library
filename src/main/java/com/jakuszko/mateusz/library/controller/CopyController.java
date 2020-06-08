@@ -4,45 +4,50 @@ import com.jakuszko.mateusz.library.domain.CopyDto;
 import com.jakuszko.mateusz.library.exceptions.BorrowNotFoundException;
 import com.jakuszko.mateusz.library.exceptions.CopyNotFoundException;
 import com.jakuszko.mateusz.library.exceptions.TitleNotFoundException;
-import com.jakuszko.mateusz.library.service.facade.CopyDbServiceFacade;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.jakuszko.mateusz.library.facade.CopyServiceFacade;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("v1/copy")
+@Slf4j
+@RequiredArgsConstructor
+@RequestMapping("v1/copies")
 public class CopyController {
-    private final CopyDbServiceFacade copyDbServiceFacade;
-
-    @Autowired
-    public CopyController(CopyDbServiceFacade copyDbServiceFacade) {
-        this.copyDbServiceFacade = copyDbServiceFacade;
-    }
+    private final CopyServiceFacade copyServiceFacade;
 
     @GetMapping
     public List<CopyDto> get() {
-        return copyDbServiceFacade.getCopies();
+        log.info("Get all copies");
+        return copyServiceFacade.getCopies();
     }
 
     @GetMapping("/{id}")
     public CopyDto get(@PathVariable Long id) throws CopyNotFoundException, TitleNotFoundException {
-        return copyDbServiceFacade.getCopy(id);
+        log.info("Get copy by id");
+        return copyServiceFacade.getCopy(id);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public void create(@RequestBody CopyDto copyDto) throws TitleNotFoundException, CopyNotFoundException {
-        copyDbServiceFacade.createCopy(copyDto);
+        log.info("Create copy");
+        copyServiceFacade.createCopy(copyDto);
     }
 
     @PutMapping
-    public void update(@RequestBody CopyDto copyDto) throws BorrowNotFoundException, TitleNotFoundException, CopyNotFoundException {
-        copyDbServiceFacade.updateCopy(copyDto);
+    public void update(@RequestBody CopyDto copyDto) throws BorrowNotFoundException, TitleNotFoundException,
+            CopyNotFoundException {
+        log.info("Update copy");
+        copyServiceFacade.updateCopy(copyDto);
     }
 
     @DeleteMapping("/{id}")
-    public void delete(@PathVariable Long id) throws CopyNotFoundException, BorrowNotFoundException, TitleNotFoundException {
-        copyDbServiceFacade.deleteCopy(id);
+    public void delete(@PathVariable Long id) throws CopyNotFoundException,
+            TitleNotFoundException {
+        log.info("Delete copy");
+        copyServiceFacade.deleteCopy(id);
     }
 }

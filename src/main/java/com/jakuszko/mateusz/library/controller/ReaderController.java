@@ -3,52 +3,57 @@ package com.jakuszko.mateusz.library.controller;
 import com.jakuszko.mateusz.library.domain.ReaderDto;
 import com.jakuszko.mateusz.library.exceptions.ReaderNotFoundException;
 import com.jakuszko.mateusz.library.exceptions.TitleNotFoundException;
-import com.jakuszko.mateusz.library.service.facade.ReaderDbServiceFacade;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.jakuszko.mateusz.library.facade.ReaderServiceFacade;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
 
 @RestController
-@RequestMapping("v1/reader")
+@Slf4j
+@RequiredArgsConstructor
+@RequestMapping("v1/readers")
 public class ReaderController {
 
-    private final ReaderDbServiceFacade readerDbServiceFacade;
-
-    @Autowired
-    public ReaderController(ReaderDbServiceFacade readerDbServiceFacade) {
-        this.readerDbServiceFacade = readerDbServiceFacade;
-    }
+    private final ReaderServiceFacade readerServiceFacade;
 
     @GetMapping
     public List<ReaderDto> get() {
-        return readerDbServiceFacade.getReaders();
+        log.info("Get all readers");
+        return readerServiceFacade.getReaders();
     }
 
     @GetMapping("/{id}")
     public ReaderDto get(@PathVariable Long id) throws ReaderNotFoundException {
-        return readerDbServiceFacade.getReader(id);
+        log.info("Get reader by id");
+        return readerServiceFacade.getReader(id);
     }
 
     @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
     public void create(@RequestBody ReaderDto readerDto) throws ReaderNotFoundException {
-        readerDbServiceFacade.createReader(readerDto);
+        log.info("Create reader");
+        readerServiceFacade.createReader(readerDto);
     }
 
     @PutMapping
     public void update(@RequestBody ReaderDto readerDto) throws ReaderNotFoundException {
-        readerDbServiceFacade.updateReader(readerDto);
+        log.info("Update reader");
+        readerServiceFacade.updateReader(readerDto);
 
     }
 
     @DeleteMapping("/{id}")
     public void delete(@PathVariable Long id) throws ReaderNotFoundException {
-        readerDbServiceFacade.deleteReader(id);
+        log.info("Delete reader by id");
+        readerServiceFacade.deleteReader(id);
     }
 
-    @PutMapping("/borrow/{bookId}/by/{readerId}")
-    public void borrowBook(@PathVariable Long bookId, @PathVariable Long readerId) throws ReaderNotFoundException, TitleNotFoundException {
-        readerDbServiceFacade.borrowBook(bookId, readerId);
+    @PostMapping("/borrows/{bookId}/readers/{readerId}")
+    public void borrowBook(@PathVariable Long bookId, @PathVariable Long readerId) throws ReaderNotFoundException,
+            TitleNotFoundException {
+        log.info("Borrow book by bookId and readerId");
+        readerServiceFacade.borrowBook(bookId, readerId);
     }
 }

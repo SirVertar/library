@@ -1,6 +1,7 @@
-package com.jakuszko.mateusz.library.service.facade;
+package com.jakuszko.mateusz.library.facade;
 
 import com.jakuszko.mateusz.library.domain.*;
+import com.jakuszko.mateusz.library.exceptions.BorrowNotFoundException;
 import com.jakuszko.mateusz.library.exceptions.ReaderNotFoundException;
 import com.jakuszko.mateusz.library.exceptions.TitleNotFoundException;
 import com.jakuszko.mateusz.library.mapper.BorrowMapper;
@@ -14,13 +15,14 @@ import com.jakuszko.mateusz.library.service.TitleDbService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import javax.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
 
 @Service
-public class ReaderDbServiceFacade {
+public class ReaderServiceFacade {
     private final BorrowDbService borrowDbService;
     private final CopyDbService copyDbService;
     private final ReaderDbService readerDbService;
@@ -30,10 +32,9 @@ public class ReaderDbServiceFacade {
     private final CopyMapper copyMapper;
     private final TitleMapper titleMapper;
 
-    @Autowired
-    public ReaderDbServiceFacade(BorrowDbService borrowDbService, CopyDbService copyDbService,
-                                 ReaderDbService readerDbService, TitleDbService titleDbService, ReaderMapper readerMapper,
-                                 BorrowMapper borrowMapper, CopyMapper copyMapper, TitleMapper titleMapper) {
+    public ReaderServiceFacade(BorrowDbService borrowDbService, CopyDbService copyDbService,
+                               ReaderDbService readerDbService, TitleDbService titleDbService, ReaderMapper readerMapper,
+                               BorrowMapper borrowMapper, CopyMapper copyMapper, TitleMapper titleMapper) {
         this.borrowDbService = borrowDbService;
         this.copyDbService = copyDbService;
         this.readerDbService = readerDbService;
@@ -44,9 +45,10 @@ public class ReaderDbServiceFacade {
         this.titleMapper = titleMapper;
     }
 
+    @Transactional
     public List<ReaderDto> getReaders() {
         List<Reader> readers = readerDbService.getReaders();
-        List<Borrow> borrows = borrowDbService.getBorrowListByReadersList(readers);
+        List<Borrow> borrows = getBorrowListByReadersList(readers);
         List<Long> copiesIdsList = borrows.stream().filter(Objects::nonNull)
                 .flatMap(borrow -> borrow.getCopies().stream()
                         .map(Copy::getId)).collect(Collectors.toList());
@@ -58,36 +60,41 @@ public class ReaderDbServiceFacade {
         return readerMapper.mapToReaderDtoList(readers, borrowDtos);
     }
 
+    @Transactional
     public ReaderDto getReader(Long id) throws ReaderNotFoundException {
         Reader reader = readerDbService.getReader(id).orElseThrow(ReaderNotFoundException::new);
-        List<Borrow> borrowDtos = borrowDbService.getBorrowListByReaderId(id);
+        List<Borrow> borrowDtos = getBorrowListByReaderId(id);
         List<Copy> copies = copyDbService.getCopiesByReaderId(id);
         List<Title> titles = titleDbService.getTitlesByCopyLists(copies);
         List<CopyDto> copyDtos = copyMapper.mapToCopyDtoList(copies, titleMapper.mapToTitleDtoList(titles));
         return readerMapper.mapToReaderDto(reader, borrowMapper.mapToBorrowDtoList(borrowDtos, copyDtos));
     }
 
+    @Transactional
     public void createReader(ReaderDto readerDto) throws ReaderNotFoundException {
         readerDbService.create(readerMapper.mapToReader(readerDto, new ArrayList<Borrow>()));
     }
 
+    @Transactional
     public void updateReader(ReaderDto readerDto) throws ReaderNotFoundException {
-        List<Borrow> borrows = borrowDbService.getBorrowListByReaderId(readerDto.getId());
+        List<Borrow> borrows = getBorrowListByReaderId(readerDto.getId());
         readerDbService.update(readerMapper.mapToReader(readerDto, borrows));
     }
 
+    @Transactional
     public void deleteReader(Long id) throws ReaderNotFoundException {
         readerDbService.getReader(id).orElseThrow(ReaderNotFoundException::new)
-                .getBorrowList().stream()
+                .getBorrows().stream()
                 .map(Borrow::getCopies)
                 .forEach(copyDbService::setBorrowToNull);
         readerDbService.getReader(id).orElseThrow(ReaderNotFoundException::new)
-                .getBorrowList().forEach(borrowDbService::setCopiesAndReaderToNull);
-        readerDbService.getReader(id).get().getBorrowList()
+                .getBorrows().forEach(this::setCopiesAndReaderToNull);
+        readerDbService.getReader(id).orElseThrow(ReaderNotFoundException::new).getBorrows()
                 .forEach(e -> borrowDbService.delete(e.getId()));
         readerDbService.delete(id);
     }
 
+    @Transactional
     public void borrowBook(Long bookId, Long readerId) throws ReaderNotFoundException, TitleNotFoundException {
         Reader reader = readerDbService.getReader(readerId).orElseThrow(ReaderNotFoundException::new);
         Borrow borrow = Borrow.builder().reader(reader).build();
@@ -98,7 +105,7 @@ public class ReaderDbServiceFacade {
                     .filter(e -> !e.getIsBorrowed())
                     .collect(Collectors.toList()));
         }
-        reader.getBorrowList().add(borrow);
+        reader.getBorrows().add(borrow);
         borrow.getCopies().forEach(e -> e.setIsBorrowed(true));
         borrow.getCopies().forEach(e -> e.setBorrow(borrow));
         List<Copy> copies = borrow.getCopies();
@@ -106,5 +113,30 @@ public class ReaderDbServiceFacade {
         borrowDbService.create(borrow);
         copies.forEach(copyDbService::update);
         readerDbService.update(reader);
+    }
+
+    private List<Borrow> getBorrowListByReaderId(Long id) {
+        return borrowDbService.getBorrows().stream()
+                .filter(borrow -> borrow.getReader().getId().equals(id))
+                .collect(Collectors.toList());
+    }
+
+    private List<Borrow> getBorrowListByReadersList(List<Reader> readers) {
+        List<Borrow> borrows;
+        borrows = readers.stream().flatMap(reader -> reader.getBorrows().stream()).map(Borrow::getId).map(e -> {
+            try {
+                return borrowDbService.getBorrow(e).orElseThrow(BorrowNotFoundException::new);
+            } catch (BorrowNotFoundException borrowNotFoundException) {
+                borrowNotFoundException.printStackTrace();
+            }
+            return null;
+        }).collect(Collectors.toList());
+        return borrows;
+    }
+
+    private void setCopiesAndReaderToNull(Borrow borrow) {
+        borrow.setCopies(null);
+        borrow.setReader(null);
+        borrowDbService.update(borrow);
     }
 }

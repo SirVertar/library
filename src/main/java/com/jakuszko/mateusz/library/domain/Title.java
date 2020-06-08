@@ -3,7 +3,6 @@ package com.jakuszko.mateusz.library.domain;
 import lombok.*;
 
 import javax.persistence.*;
-import javax.validation.constraints.NotNull;
 import java.util.List;
 
 @Builder
@@ -15,7 +14,6 @@ import java.util.List;
 public class Title {
     @Id
     @GeneratedValue(strategy = GenerationType.AUTO)
-    @NotNull
     @Column(name = "ID")
     private Long id;
 
