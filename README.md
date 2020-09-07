@@ -35,13 +35,13 @@
         * Action : receive all readers data list
         * URL : http://localhost:8080/v1/readers
         * Sample of response:
-        * ![Algorithm](main/resources/img/All_Readers.png)
+        * ![Algorithm](src/main/resources/img/All_Readers.png)
     * Get a reader by id
         * Http method - GET
         * Action : receive a reader data by id
         * URL : http://localhost:8080/v1/readers/{id}
         * Sample of response:
-        * ![Algorithm](main/resources/img/One_Reader.png)
+        * ![Algorithm](src/main/resources/img/One_Reader.png)
     * Create reader
         * Http method - POST
         * Action : create reader and save it into database
@@ -63,13 +63,13 @@
         * Action : receive all copies data list
         * URL : http://localhost:8080/v1/copies
         * Sample of response:
-        * ![Algorithm](main/resources/img/All_Copies.png)
+        * ![Algorithm](src/main/resources/img/All_Copies.png)
     * Get a copy by id
         * Http method - GET
         * Action : receive a copy data by id
         * URL : http://localhost:8080/v1/copies{id}
         * Sample of response:
-        * ![Algorithm](main/resources/img/One_Copy.png)
+        * ![Algorithm](src/main/resources/img/One_Copy.png)
     * Create copy
         * Http method - POST
         * Action : create copy and save it into database
@@ -91,13 +91,13 @@
         * Action : receive all titles data list
         * URL : http://localhost:8080/v1/titles
         * Sample of response:
-        * ![Algorithm](main/resources/img/All_Titles.png)
+        * ![Algorithm](src/main/resources/img/All_Titles.png)
     * Get a title by id
         * Http method - GET
         * Action : receive a title data by id
         * URL : http://localhost:8080/v1/titles/{id}
         * Sample of response:
-        * ![Algorithm](main/resources/img/One_Title.png)
+        * ![Algorithm](src/main/resources/img/One_Title.png)
     * Create title
         * Http method - POST
         * Action : create title and save it into database
@@ -118,13 +118,13 @@
         * Action : receive all borrows data list
         * URL : http://localhost:8080/v1/borrows
         * Sample of response:
-        * ![Algorithm](main/resources/img/All_Borrows.png)
+        * ![Algorithm](src/main/resources/img/All_Borrows.png)
     * Get a borrow by id
         * Http method - GET
         * Action : receive a borrow data by id
         * URL : http://localhost:8080/v1/borrows/{id}
         * Sample of response:
-        * ![Algorithm](main/resources/img/One_Borrow.png)
+        * ![Algorithm](src/main/resources/img/One_Borrow.png)
     * Create borrow
         * Http method - POST
         * Action : create borrow and save it into database
