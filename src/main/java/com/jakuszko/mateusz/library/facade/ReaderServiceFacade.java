@@ -12,7 +12,6 @@ import com.jakuszko.mateusz.library.service.BorrowDbService;
 import com.jakuszko.mateusz.library.service.CopyDbService;
 import com.jakuszko.mateusz.library.service.ReaderDbService;
 import com.jakuszko.mateusz.library.service.TitleDbService;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import javax.transaction.Transactional;
@@ -63,11 +62,11 @@ public class ReaderServiceFacade {
     @Transactional
     public ReaderDto getReader(Long id) throws ReaderNotFoundException {
         Reader reader = readerDbService.getReader(id).orElseThrow(ReaderNotFoundException::new);
-        List<Borrow> borrowDtos = getBorrowListByReaderId(id);
-        List<Copy> copies = copyDbService.getCopiesByReaderId(id);
+        List<Borrow> borrows = reader.getBorrows();
+        List<Copy> copies = getCopiesFromBorrows(borrows);
         List<Title> titles = titleDbService.getTitlesByCopyLists(copies);
         List<CopyDto> copyDtos = copyMapper.mapToCopyDtoList(copies, titleMapper.mapToTitleDtoList(titles));
-        return readerMapper.mapToReaderDto(reader, borrowMapper.mapToBorrowDtoList(borrowDtos, copyDtos));
+        return readerMapper.mapToReaderDto(reader, borrowMapper.mapToBorrowDtoList(borrows, copyDtos));
     }
 
     @Transactional
@@ -138,5 +137,11 @@ public class ReaderServiceFacade {
         borrow.setCopies(null);
         borrow.setReader(null);
         borrowDbService.update(borrow);
+    }
+
+    private List<Copy> getCopiesFromBorrows(List<Borrow> borrows) {
+        return borrows.stream()
+                .flatMap(borrow -> borrow.getCopies().stream())
+                .collect(Collectors.toList());
     }
 }
