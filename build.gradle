@@ -21,6 +21,7 @@ apply plugin: 'java'
 apply plugin: 'idea'
 apply plugin: 'org.springframework.boot'
 apply plugin: 'io.spring.dependency-management'
+apply plugin: 'groovy'
 
 group = 'com.jakuszko.mateusz'
 version = 'v.0.0.2'
@@ -49,9 +50,20 @@ dependencies {
     compileOnly 'org.projectlombok:lombok'
     annotationProcessor 'org.projectlombok:lombok'
 
-
     implementation 'junit:junit:4.12'
     testImplementation('org.springframework.boot:spring-boot-starter-test') {
         exclude group: 'org.junit.vintage', module: 'junit-vintage-engine'
     }
+
+    testCompile(
+            'junit:junit:4.12',
+            'org.codehaus.groovy:groovy-all:2.4.11',
+            'org.spockframework:spock-core:1.1-groovy-2.4'
+    )
+
+//    testCompile "org.spockframework:spock-core:1.0-groovy-2.4"
+//    testCompile "org.codehaus.groovy:groovy-all:2.4.7"
+//    compile group: 'org.codehaus.gmavenplus', name: 'gmavenplus-plugin', version: '1.7.1'
+
+
 }
